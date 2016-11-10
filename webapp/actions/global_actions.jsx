@@ -43,16 +43,24 @@ export function emitChannelClickEvent(channel) {
         );
     }
     function switchToChannel(chan) {
-        AsyncClient.getChannelStats(chan.id, true);
-        AsyncClient.updateLastViewedAt(chan.id);
-        loadPosts(chan.id);
-        trackPage();
+        const doGetChannelMemberPromise = new Promise((resolve) => {
+            //AsyncClient.getChannelMember(chan.id, UserStore.getCurrentId());
+            AsyncClient.getMyChannelMembers();
+            resolve();
+        });
 
-        AppDispatcher.handleViewAction({
-            type: ActionTypes.CLICK_CHANNEL,
-            name: chan.name,
-            id: chan.id,
-            prev: ChannelStore.getCurrentId()
+        doGetChannelMemberPromise.then(() => {
+            AsyncClient.getChannelStats(chan.id, true);
+            AsyncClient.updateLastViewedAt(chan.id);
+            loadPosts(chan.id);
+            trackPage();
+
+            AppDispatcher.handleViewAction({
+                type: ActionTypes.CLICK_CHANNEL,
+                name: chan.name,
+                id: chan.id,
+                prev: ChannelStore.getCurrentId()
+            });
         });
     }
 
